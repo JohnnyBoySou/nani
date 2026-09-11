@@ -1,4 +1,4 @@
-# ff
+# nani
 
 Navegador de pastas e editor leve de terminal, com LSP de verdade para **Go** e
 **TypeScript** — sem virar um Neovim.
@@ -24,7 +24,7 @@ dele só entende diagnósticos **push** (`textDocument/publishDiagnostics`).
 
 O `tsgo`, o TypeScript reescrito em Go, entrega diagnósticos por **pull**
 (`textDocument/diagnostic`) e ainda bloqueia esperando respostas a requests que o
-plugin do micro não responde. Por isso o `ff` embute uma ponte LSP:
+plugin do micro não responde. Por isso o `nani` embute uma ponte LSP:
 
 - responde `workspace/configuration` e `client/registerCapability` no lugar do
   editor, que é o que destrava o `tsgo`;
@@ -37,18 +37,22 @@ TypeScript nativo. O `gopls` passa pelo mesmo caminho e funciona igual.
 
 ## Instalação
 
-Baixe o binário da [release](https://github.com/JohnnyBoySou/nani/releases),
-coloque no PATH e rode o setup:
+Baixe o binário da [release](https://github.com/JohnnyBoySou/nani/releases) e
+rode o setup:
 
 ```bash
-install -m755 ff ~/.local/bin/ff
-ff setup
+chmod +x nani-linux-amd64
+./nani-linux-amd64 setup
 ```
 
-O `ff setup` é idempotente — rodar de novo só preenche o que falta. Ele instala:
+O setup copia o próprio binário para `~/.local/bin/nani` — daí em diante o comando
+é só `nani`, de qualquer diretório.
+
+O `nani setup` é idempotente — rodar de novo só preenche o que falta. Ele instala:
 
 | o quê | onde |
 | --- | --- |
+| o próprio `nani` | `~/.local/bin/nani` |
 | micro (binário estático da última release) | `~/.local/bin/micro` |
 | plugins `lsp`, `filemanager`, `fzf`, `detectindent`, `editorconfig` | `~/.config/micro/plug/` |
 | `gopls` (via `go install`) | `~/go/bin/gopls` |
@@ -61,14 +65,14 @@ do npm da máquina.
 Para compilar em vez de baixar:
 
 ```bash
-go build -o ~/.local/bin/ff .
+go build -o ~/.local/bin/nani .
 ```
 
 ## Uso
 
 ```bash
-ff              # navega a partir da pasta atual (ou de ~/work, se chamado do home)
-ff ~/projetos   # navega a partir de uma pasta específica
+nani            # navega a partir da pasta atual (ou de ~/work, se chamado do home)
+nani ~/projetos # navega a partir de uma pasta específica
 ```
 
 Enter entra na pasta e depois abre o arquivo. `Esc` na lista de arquivos volta
@@ -96,7 +100,7 @@ qualquer lugar.
 
 O plugin LSP do micro usa o diretório de trabalho do editor como `rootUri`. Se o
 micro abrir de dentro de um subdiretório, o `gopls` e o `tsgo` não resolvem os
-imports. Por isso o `ff` sobe a partir do arquivo até achar `go.mod`, `go.work`,
+imports. Por isso o `nani` sobe a partir do arquivo até achar `go.mod`, `go.work`,
 `package.json`, `tsconfig.json`, `deno.json` ou `.git`, e abre o editor a partir
 dali.
 
@@ -105,14 +109,14 @@ dali.
 O proxy LSP grava log se você apontar um caminho:
 
 ```bash
-FF_LSP_LOG=/tmp/ff-lsp.log ff
+NANI_LSP_LOG=/tmp/nani-lsp.log nani
 ```
 
 O log mostra o handshake, os requests do servidor que foram respondidos e quantos
 diagnósticos vieram em cada consulta:
 
 ```
--> pedindo diagnósticos de file:///.../index.ts (id ff-diag-1)
+-> pedindo diagnósticos de file:///.../index.ts (id nani-diag-1)
 <- 1 diagnóstico(s) para file:///.../index.ts
 ```
 
@@ -121,7 +125,7 @@ Nenhum diagnóstico chegando costuma ser uma destas causas:
 - **o arquivo está fora de um projeto** — sem `go.mod` ou `tsconfig.json` por
   perto, o servidor não monta o workspace;
 - **`typescript` 7 instalado como global do npm** — o `typescript-language-server`
-  procura `lib/tsserver.js`, que não existe mais no pacote da versão 7. O `ff` usa
+  procura `lib/tsserver.js`, que não existe mais no pacote da versão 7. O `nani` usa
   o `tsgo` justamente para não depender disso;
 - **binário fora do PATH** — confira `which gopls tsgo micro`.
 
@@ -129,8 +133,8 @@ Nenhum diagnóstico chegando costuma ser uma destas causas:
 
 | variável | efeito |
 | --- | --- |
-| `FF_EDITOR` | editor a abrir, no lugar do micro |
-| `FF_LSP_LOG` | caminho do log do proxy LSP |
+| `NANI_EDITOR` | editor a abrir, no lugar do micro |
+| `NANI_LSP_LOG` | caminho do log do proxy LSP |
 
 ## Estrutura
 

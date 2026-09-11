@@ -27,6 +27,13 @@ func runSetup() error {
 		return err
 	}
 
+	step("o próprio nani")
+	naniPath, err := installSelf(binDir)
+	if err != nil {
+		return err
+	}
+	okf("nani em %s", naniPath)
+
 	step("editor micro")
 	microPath, err := ensureMicro(binDir)
 	if err != nil {
@@ -56,13 +63,13 @@ func runSetup() error {
 	}
 
 	step("configuração do micro")
-	if err := writeMicroConfig(home); err != nil {
+	if err := writeMicroConfig(home, naniPath); err != nil {
 		return err
 	}
 	okf("settings.json e bindings.json escritos")
 
 	fmt.Println()
-	fmt.Println("pronto. use `ff` para navegar e editar.")
+	fmt.Println("pronto. use `nani` para navegar e editar.")
 	if !inPath(binDir) {
 		fmt.Printf("\natenção: %s não está no PATH. adicione ao seu shell:\n", binDir)
 		fmt.Printf("  bash/zsh:  export PATH=\"%s:$PATH\"\n", binDir)
@@ -81,6 +88,50 @@ func run(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	return cmd.Run()
+}
+
+// installSelf copia o binário para o PATH, para que baixar o arquivo da release
+// e rodar o setup baste — sem passo manual de instalação.
+func installSelf(binDir string) (string, error) {
+	self, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	if resolved, err := filepath.EvalSymlinks(self); err == nil {
+		self = resolved
+	}
+	dest := filepath.Join(binDir, "nani")
+	if self == dest {
+		return dest, nil // já é o binário instalado
+	}
+
+	src, err := os.Open(self)
+	if err != nil {
+		return "", err
+	}
+	defer src.Close()
+
+	// Grava ao lado e renomeia: sobrescrever direto falha quando a versão
+	// antiga está em execução.
+	tmp, err := os.CreateTemp(binDir, ".nani-*")
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(tmp.Name())
+	if _, err := io.Copy(tmp, src); err != nil {
+		tmp.Close()
+		return "", err
+	}
+	if err := tmp.Close(); err != nil {
+		return "", err
+	}
+	if err := os.Chmod(tmp.Name(), 0o755); err != nil {
+		return "", err
+	}
+	if err := os.Rename(tmp.Name(), dest); err != nil {
+		return "", err
+	}
+	return dest, nil
 }
 
 // ensureMicro devolve o caminho do micro, baixando o binário estático da última
@@ -233,20 +284,16 @@ func ensureTsgo(home, binDir string) (string, error) {
 }
 
 // writeMicroConfig grava as opções sem descartar o que a pessoa já tinha.
-func writeMicroConfig(home string) error {
+func writeMicroConfig(home, naniPath string) error {
 	configDir := filepath.Join(home, ".config", "micro")
 	if err := os.MkdirAll(configDir, 0o755); err != nil {
 		return err
 	}
 
-	ffPath, err := os.Executable()
-	if err != nil || ffPath == "" {
-		ffPath = "ff"
-	}
 	// Os servidores sobem atrás do proxy: ele responde os requests que travam o
 	// tsgo e converte os diagnósticos de pull para push.
 	lspServer := fmt.Sprintf("go=%s lsp gopls,typescript=%s lsp tsgo --lsp -stdio,javascript=%s lsp tsgo --lsp -stdio",
-		ffPath, ffPath, ffPath)
+		naniPath, naniPath, naniPath)
 
 	settings := map[string]any{
 		"colorscheme":             "dracula-tc",

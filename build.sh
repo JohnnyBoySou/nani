@@ -6,6 +6,6 @@ version="${1:-$(grep -oP 'const version = "\K[^"]+' main.go)}"
 mkdir -p dist
 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-  go build -trimpath -ldflags "-s -w" -o "dist/ff-linux-amd64" .
+  go build -trimpath -ldflags "-s -w" -o "dist/nani-linux-amd64" .
 
-echo "dist/ff-linux-amd64  ($(du -h dist/ff-linux-amd64 | cut -f1))  versão $version"
+echo "dist/nani-linux-amd64  ($(du -h dist/nani-linux-amd64 | cut -f1))  versão $version"

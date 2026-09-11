@@ -25,7 +25,7 @@ import (
 
 // Prefixo dos ids criados aqui. Os ids do cliente são números, então uma string
 // com prefixo nunca colide com eles.
-const diagIDPrefix = "ff-diag-"
+const diagIDPrefix = "nani-diag-"
 
 // debounce entre a última edição e o pedido de diagnósticos.
 const diagDebounce = 300 * time.Millisecond
@@ -348,7 +348,7 @@ func (p *proxy) serverToClient(out io.Reader) error {
 // runLSPProxy sobe o servidor informado e faz a ponte com o editor via stdio.
 func runLSPProxy(server string, args []string) error {
 	var debug io.Writer
-	if path := os.Getenv("FF_LSP_LOG"); path != "" {
+	if path := os.Getenv("NANI_LSP_LOG"); path != "" {
 		f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 		if err == nil {
 			defer f.Close()

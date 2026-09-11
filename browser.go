@@ -59,7 +59,7 @@ func runBrowser(dir string) error {
 				return err
 			}
 			if len(files) == 0 {
-				fmt.Fprintf(os.Stderr, "ff: nenhum arquivo em %s\n", target)
+				fmt.Fprintf(os.Stderr, "nani: nenhum arquivo em %s\n", target)
 				break
 			}
 			file, err := pick(files, "arquivo", target, "Enter edita · Esc volta às pastas", previewFileCmd(target))
@@ -237,7 +237,7 @@ func pickPlain(items []string, kind, header, hint string) (string, error) {
 }
 
 func editorCommand() string {
-	if env := os.Getenv("FF_EDITOR"); env != "" {
+	if env := os.Getenv("NANI_EDITOR"); env != "" {
 		return env
 	}
 	if _, err := exec.LookPath("micro"); err == nil {
