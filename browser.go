@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,82 +28,117 @@ var rootMarkers = []string{"go.mod", "go.work", "package.json", "tsconfig.json",
 // errCancelled indica que a pessoa saiu do seletor (Esc ou Ctrl-C).
 var errCancelled = errors.New("cancelado")
 
+// upEntry é a linha que sobe um nível, equivalente à seta para a esquerda.
+const upEntry = "../"
+
+type entry struct {
+	label string // como aparece na lista: "src/" para pasta, "main.go" para arquivo
+	path  string // caminho absoluto
+	isDir bool
+}
+
 func runBrowser(dir string) error {
-	root, err := resolveRoot(dir)
+	cwd, err := resolveRoot(dir)
 	if err != nil {
 		return err
 	}
 	editor := editorCommand()
 
+	// Ao subir, o cursor volta posicionado na pasta de onde se saiu.
+	cameFrom := ""
+
 	for {
-		dirs, err := listDirs(root, 3)
+		entries, err := listEntries(cwd)
 		if err != nil {
 			return err
 		}
-		chosen, err := pick(dirs, "pasta", root, "Enter entra · Esc encerra", previewDirCmd(root))
+		choice, key, err := pick(entries, cwd, cameFrom)
 		if errors.Is(err, errCancelled) {
 			return nil
 		}
 		if err != nil {
 			return err
 		}
+		cameFrom = ""
 
-		target := root
-		if chosen != "." {
-			target = filepath.Join(root, chosen)
+		if key == "left" || choice.label == upEntry {
+			cwd, cameFrom = parentOf(cwd)
+			continue
 		}
-
-		for {
-			files, err := listFiles(target)
-			if err != nil {
-				return err
-			}
-			if len(files) == 0 {
-				fmt.Fprintf(os.Stderr, "nani: nenhum arquivo em %s\n", target)
-				break
-			}
-			file, err := pick(files, "arquivo", target, "Enter edita · Esc volta às pastas", previewFileCmd(target))
-			if errors.Is(err, errCancelled) {
-				break // volta ao seletor de pastas, não encerra
-			}
-			if err != nil {
-				return err
-			}
-			path := filepath.Join(target, file)
-			if err := openEditor(editor, path); err != nil {
-				return err
-			}
+		if choice.isDir {
+			cwd, cameFrom = choice.path, ""
+			continue
+		}
+		if err := openEditor(editor, choice.path); err != nil {
+			return err
 		}
 	}
 }
 
-func resolveRoot(dir string) (string, error) {
-	if dir == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return "", err
-		}
-		// Chamado direto do home, o diretório de trabalho é o alvo mais provável.
-		if home, err := os.UserHomeDir(); err == nil && cwd == home {
-			if work := filepath.Join(home, "work"); isDir(work) {
-				return work, nil
-			}
-		}
-		return cwd, nil
+// parentOf sobe um nível e devolve de onde veio, para reposicionar o cursor.
+func parentOf(dir string) (string, string) {
+	parent := filepath.Dir(dir)
+	if parent == dir {
+		return dir, "" // já está na raiz do sistema de arquivos
 	}
-	abs, err := filepath.Abs(dir)
+	return parent, filepath.Base(dir) + "/"
+}
+
+// listEntries devolve o conteúdo imediato do diretório: pastas primeiro, depois
+// arquivos. Dentro de um repositório, respeita o .gitignore.
+func listEntries(dir string) ([]entry, error) {
+	dirs, files, err := childrenOf(dir)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if !isDir(abs) {
-		return "", fmt.Errorf("não é um diretório: %s", dir)
+	sort.Strings(dirs)
+	sort.Strings(files)
+
+	out := make([]entry, 0, len(dirs)+len(files)+1)
+	if parent := filepath.Dir(dir); parent != dir {
+		out = append(out, entry{label: upEntry, path: parent, isDir: true})
 	}
-	return abs, nil
+	for _, name := range dirs {
+		out = append(out, entry{label: name + "/", path: filepath.Join(dir, name), isDir: true})
+	}
+	for _, name := range files {
+		out = append(out, entry{label: name, path: filepath.Join(dir, name), isDir: false})
+	}
+	return out, nil
 }
 
-func isDir(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && info.IsDir()
+// childrenOf separa pastas e arquivos do nível imediato.
+func childrenOf(dir string) (dirs, files []string, err error) {
+	if tracked, ok := gitFiles(dir); ok {
+		seenDir := map[string]bool{}
+		for _, rel := range tracked {
+			if name, _, isNested := strings.Cut(rel, string(filepath.Separator)); isNested {
+				if !seenDir[name] {
+					seenDir[name] = true
+					dirs = append(dirs, name)
+				}
+				continue
+			}
+			files = append(files, rel)
+		}
+		return dirs, files, nil
+	}
+
+	// Fora de um repositório: lê o diretório e aplica a lista fixa.
+	items, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, item := range items {
+		if item.IsDir() {
+			if !skipDirs[item.Name()] {
+				dirs = append(dirs, item.Name())
+			}
+			continue
+		}
+		files = append(files, item.Name())
+	}
+	return dirs, files, nil
 }
 
 // gitFiles devolve o que o git mostraria dentro de dir: arquivos rastreados mais
@@ -126,124 +160,93 @@ func gitFiles(dir string) ([]string, bool) {
 	return files, true
 }
 
-// dirsFromFiles deriva a lista de pastas a partir dos arquivos visíveis. Uma
-// pasta inteira ignorada, como node_modules, simplesmente não aparece.
-func dirsFromFiles(files []string, maxDepth int) []string {
-	seen := map[string]bool{}
-	for _, file := range files {
-		dir := filepath.Dir(file)
-		for dir != "." && dir != string(filepath.Separator) {
-			if strings.Count(dir, string(filepath.Separator))+1 <= maxDepth {
-				seen[dir] = true
+func resolveRoot(dir string) (string, error) {
+	if dir == "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		// Chamado direto do home, o diretório de trabalho é o alvo mais provável.
+		if home, err := os.UserHomeDir(); err == nil && cwd == home {
+			if work := filepath.Join(home, "work"); isDir(work) {
+				return work, nil
 			}
-			dir = filepath.Dir(dir)
 		}
+		return cwd, nil
 	}
-	out := []string{"."}
-	for dir := range seen {
-		out = append(out, dir)
-	}
-	sort.Strings(out)
-	return out
-}
-
-func listDirs(root string, maxDepth int) ([]string, error) {
-	if files, ok := gitFiles(root); ok {
-		return dirsFromFiles(files, maxDepth), nil
-	}
-	out := []string{"."}
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return nil // uma pasta ilegível não interrompe a navegação
-		}
-		if !d.IsDir() || path == root {
-			return nil
-		}
-		if skipDirs[d.Name()] {
-			return filepath.SkipDir
-		}
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return nil
-		}
-		if strings.Count(rel, string(filepath.Separator))+1 > maxDepth {
-			return filepath.SkipDir
-		}
-		out = append(out, rel)
-		return nil
-	})
+	abs, err := filepath.Abs(dir)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	sort.Strings(out)
-	return out, nil
+	if !isDir(abs) {
+		return "", fmt.Errorf("not a folder: %s", dir)
+	}
+	return abs, nil
 }
 
-func listFiles(dir string) ([]string, error) {
-	if files, ok := gitFiles(dir); ok {
-		sort.Strings(files)
-		return files, nil
-	}
-	var out []string
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return nil
-		}
-		if d.IsDir() {
-			if skipDirs[d.Name()] && path != dir {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		rel, err := filepath.Rel(dir, path)
-		if err == nil {
-			out = append(out, rel)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Strings(out)
-	return out, nil
+func isDir(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }
 
-func previewDirCmd(root string) string {
+// previewCmd mostra árvore para pastas e conteúdo para arquivos.
+func previewCmd(dir string) string {
+	target := shellQuote(dir) + "/{}"
+	tree := "ls -A"
 	if _, err := exec.LookPath("eza"); err == nil {
 		// --git-ignore para o preview não mostrar o que a listagem já esconde.
-		return "eza --tree --level=2 --icons --color=always --git-ignore " + shellQuote(root) + "/{} 2>/dev/null | head -300"
+		tree = "eza --tree --level=2 --icons --color=always --git-ignore"
 	}
-	return "ls -A " + shellQuote(root) + "/{} 2>/dev/null | head -300"
-}
-
-func previewFileCmd(dir string) string {
+	file := "head -500"
 	if _, err := exec.LookPath("bat"); err == nil {
-		return "bat --style=numbers --color=always --line-range :500 " + shellQuote(dir) + "/{} 2>/dev/null"
+		file = "bat --style=numbers --color=always --line-range :500"
 	}
-	return "head -500 " + shellQuote(dir) + "/{} 2>/dev/null"
+	return fmt.Sprintf(`p=%s; if [ -d "$p" ]; then %s "$p" 2>/dev/null | head -300; else %s "$p" 2>/dev/null; fi`,
+		target, tree, file)
 }
 
 func shellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
 
-// pick mostra a lista no fzf; sem fzf instalado, usa um seletor numerado.
-func pick(items []string, kind, header, hint, preview string) (string, error) {
+// pick mostra o conteúdo da pasta e devolve o item escolhido mais a tecla usada
+// ("left" para voltar, "" para Enter, "right" para entrar).
+func pick(entries []entry, cwd, cameFrom string) (entry, string, error) {
 	if _, err := exec.LookPath("fzf"); err == nil {
-		return pickFzf(items, kind, header, hint, preview)
+		return pickFzf(entries, cwd, cameFrom)
 	}
-	return pickPlain(items, kind, header, hint)
+	return pickPlain(entries, cwd)
 }
 
-func pickFzf(items []string, kind, header, hint, preview string) (string, error) {
-	cmd := exec.Command("fzf",
-		"--prompt="+kind+" ❯ ",
-		"--header="+header+"\n"+hint,
-		"--preview="+preview,
-		"--preview-window=right,60%",
+func pickFzf(entries []entry, cwd, cameFrom string) (entry, string, error) {
+	labels := make([]string, len(entries))
+	for i, e := range entries {
+		labels[i] = e.label
+	}
+
+	args := []string{
+		"--prompt=" + filepath.Base(cwd) + " ❯ ",
+		"--header=" + cwd + "\n→ in · ← back · enter open · esc quit",
+		"--preview=" + previewCmd(cwd),
+		"--preview-window=right,55%",
 		"--height=100%",
-	)
-	cmd.Stdin = strings.NewReader(strings.Join(items, "\n"))
+		// Explícito para não depender do FZF_DEFAULT_OPTS de cada máquina.
+		"--layout=reverse",
+		// As setas deixam de andar pela busca e passam a navegar pelas pastas.
+		"--expect=right,left",
+	}
+	// Ao voltar, o cursor começa na pasta de onde se saiu.
+	if cameFrom != "" {
+		for i, label := range labels {
+			if label == cameFrom {
+				args = append(args, "--sync", fmt.Sprintf("--bind=start:pos(%d)", i+1))
+				break
+			}
+		}
+	}
+
+	cmd := exec.Command("fzf", args...)
+	cmd.Stdin = strings.NewReader(strings.Join(labels, "\n"))
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
@@ -251,38 +254,49 @@ func pickFzf(items []string, kind, header, hint, preview string) (string, error)
 		if errors.As(err, &exit) {
 			// 1 = nada casou, 130 = interrompido pela pessoa.
 			if exit.ExitCode() == 1 || exit.ExitCode() == 130 {
-				return "", errCancelled
+				return entry{}, "", errCancelled
 			}
 		}
-		return "", err
+		return entry{}, "", err
 	}
-	choice := strings.TrimSpace(string(out))
-	if choice == "" {
-		return "", errCancelled
+
+	// Com --expect, a primeira linha é a tecla (vazia no Enter) e a segunda é a
+	// escolha.
+	lines := strings.Split(strings.TrimRight(string(out), "\n"), "\n")
+	if len(lines) < 2 {
+		return entry{}, "", errCancelled
 	}
-	return choice, nil
+	key, label := lines[0], lines[1]
+	for _, e := range entries {
+		if e.label == label {
+			return e, key, nil
+		}
+	}
+	return entry{}, "", errCancelled
 }
 
-func pickPlain(items []string, kind, header, hint string) (string, error) {
-	fmt.Printf("\n%s\n%s\n\n", header, hint)
-	for i, item := range items {
-		fmt.Printf("  %3d  %s\n", i+1, item)
+func pickPlain(entries []entry, cwd string) (entry, string, error) {
+	fmt.Printf("\n%s\n\n", cwd)
+	for i, e := range entries {
+		fmt.Printf("  %3d  %s\n", i+1, e.label)
 	}
-	fmt.Printf("\nescolha %s (número, vazio para voltar): ", kind)
+	fmt.Print("\nnumber opens · empty goes up · q quits: ")
 
 	line, err := bufio.NewReader(os.Stdin).ReadString('\n')
 	if err != nil {
-		return "", errCancelled
+		return entry{}, "", errCancelled
 	}
-	line = strings.TrimSpace(line)
-	if line == "" {
-		return "", errCancelled
+	switch line = strings.TrimSpace(line); line {
+	case "":
+		return entry{}, "left", nil
+	case "q":
+		return entry{}, "", errCancelled
 	}
 	n, err := strconv.Atoi(line)
-	if err != nil || n < 1 || n > len(items) {
-		return "", fmt.Errorf("escolha inválida: %s", line)
+	if err != nil || n < 1 || n > len(entries) {
+		return entry{}, "", fmt.Errorf("invalid choice: %s", line)
 	}
-	return items[n-1], nil
+	return entries[n-1], "", nil
 }
 
 func editorCommand() string {

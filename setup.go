@@ -27,51 +27,51 @@ func runSetup() error {
 		return err
 	}
 
-	step("o próprio nani")
+	step("nani itself")
 	naniPath, err := installSelf(binDir)
 	if err != nil {
 		return err
 	}
-	okf("nani em %s", naniPath)
+	okf("nani at %s", naniPath)
 
-	step("editor micro")
+	step("micro editor")
 	microPath, err := ensureMicro(binDir)
 	if err != nil {
-		return fmt.Errorf("instalando o micro: %w", err)
+		return fmt.Errorf("installing micro: %w", err)
 	}
-	okf("micro em %s", microPath)
+	okf("micro at %s", microPath)
 
-	step("plugins do micro")
+	step("micro plugins")
 	if err := ensurePlugins(microPath); err != nil {
-		warnf("não consegui instalar todos os plugins: %v", err)
+		warnf("could not install every plugin: %v", err)
 	} else {
 		okf("lsp, filemanager, fzf, detectindent, editorconfig")
 	}
 
-	step("language server de Go (gopls)")
+	step("Go language server (gopls)")
 	if path, err := ensureGopls(); err != nil {
 		warnf("%v", err)
 	} else {
-		okf("gopls em %s", path)
+		okf("gopls at %s", path)
 	}
 
-	step("TypeScript nativo (tsgo)")
+	step("native TypeScript (tsgo)")
 	if path, err := ensureTsgo(home, binDir); err != nil {
 		warnf("%v", err)
 	} else {
-		okf("tsgo em %s", path)
+		okf("tsgo at %s", path)
 	}
 
-	step("configuração do micro")
+	step("micro configuration")
 	if err := writeMicroConfig(home, naniPath); err != nil {
 		return err
 	}
-	okf("settings.json e bindings.json escritos")
+	okf("settings.json and bindings.json written")
 
 	fmt.Println()
-	fmt.Println("pronto. use `nani` para navegar e editar.")
+	fmt.Println("done. run `nani` to browse and edit.")
 	if !inPath(binDir) {
-		fmt.Printf("\natenção: %s não está no PATH. adicione ao seu shell:\n", binDir)
+		fmt.Printf("\nwarning: %s is not in your PATH. add it to your shell:\n", binDir)
 		fmt.Printf("  bash/zsh:  export PATH=\"%s:$PATH\"\n", binDir)
 		fmt.Printf("  fish:      fish_add_path -g %s\n", binDir)
 	}
@@ -80,7 +80,7 @@ func runSetup() error {
 
 func step(name string)                   { fmt.Printf("\n== %s\n", name) }
 func okf(f string, a ...any)             { fmt.Printf("   ok: "+f+"\n", a...) }
-func warnf(f string, a ...any)           { fmt.Printf("   aviso: "+f+"\n", a...) }
+func warnf(f string, a ...any)           { fmt.Printf("   warning: "+f+"\n", a...) }
 func inPath(dir string) bool             { return strings.Contains(os.Getenv("PATH"), dir) }
 func haveCmd(name string) (string, bool) { p, err := exec.LookPath(name); return p, err == nil }
 
@@ -149,14 +149,14 @@ func ensureMicro(binDir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("   baixando %s\n", asset)
+	fmt.Printf("   downloading %s\n", asset)
 	resp, err := http.Get(asset)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("download falhou: %s", resp.Status)
+		return "", fmt.Errorf("download failed: %s", resp.Status)
 	}
 	if err := extractMicro(resp.Body, target); err != nil {
 		return "", err
@@ -193,14 +193,14 @@ func microAssetURL() (string, error) {
 	case "darwin/arm64":
 		want = "macos-arm64.tar.gz"
 	default:
-		return "", fmt.Errorf("sem binário pronto para %s/%s: instale o micro pelo gerenciador de pacotes", runtime.GOOS, runtime.GOARCH)
+		return "", fmt.Errorf("no prebuilt binary for %s/%s: install micro from your package manager", runtime.GOOS, runtime.GOARCH)
 	}
 	for _, a := range release.Assets {
 		if strings.HasSuffix(a.Name, want) {
 			return a.URL, nil
 		}
 	}
-	return "", fmt.Errorf("não achei o arquivo %s na última release do micro", want)
+	return "", fmt.Errorf("could not find %s in the latest micro release", want)
 }
 
 // extractMicro tira o executável de dentro do .tar.gz e o grava em dest.
@@ -214,7 +214,7 @@ func extractMicro(r io.Reader, dest string) error {
 	for {
 		header, err := tr.Next()
 		if err == io.EOF {
-			return fmt.Errorf("executável não encontrado no arquivo baixado")
+			return fmt.Errorf("executable not found in the downloaded archive")
 		}
 		if err != nil {
 			return err
@@ -243,11 +243,11 @@ func ensureGopls() (string, error) {
 		return path, nil
 	}
 	if _, ok := haveCmd("go"); !ok {
-		return "", fmt.Errorf("go não encontrado; instale o Go para ter gopls")
+		return "", fmt.Errorf("go not found; install Go to get gopls")
 	}
-	fmt.Println("   go install golang.org/x/tools/gopls@latest (demora um pouco)")
+	fmt.Println("   go install golang.org/x/tools/gopls@latest (takes a while)")
 	if err := run("go", "install", "golang.org/x/tools/gopls@latest"); err != nil {
-		return "", fmt.Errorf("go install de gopls falhou: %w", err)
+		return "", fmt.Errorf("go install of gopls failed: %w", err)
 	}
 	if path, ok := haveCmd("gopls"); ok {
 		return path, nil
@@ -264,7 +264,7 @@ func ensureTsgo(home, binDir string) (string, error) {
 		return path, nil
 	}
 	if _, ok := haveCmd("npm"); !ok {
-		return "", fmt.Errorf("npm não encontrado; instale o Node para ter o tsgo")
+		return "", fmt.Errorf("npm not found; install Node to get tsgo")
 	}
 	prefix := filepath.Join(home, ".local", "lib", "tsgo")
 	if err := os.MkdirAll(prefix, 0o755); err != nil {
@@ -272,7 +272,7 @@ func ensureTsgo(home, binDir string) (string, error) {
 	}
 	fmt.Println("   npm i @typescript/native-preview")
 	if err := run("npm", "i", "--prefix", prefix, "@typescript/native-preview"); err != nil {
-		return "", fmt.Errorf("npm install do tsgo falhou: %w", err)
+		return "", fmt.Errorf("npm install of tsgo failed: %w", err)
 	}
 	real := filepath.Join(prefix, "node_modules", "@typescript", "native-preview", "bin", "tsgo")
 	link := filepath.Join(binDir, "tsgo")
@@ -315,7 +315,7 @@ func writeMicroConfig(home, naniPath string) error {
 		"scrollbar":               true,
 		"softwrap":                true,
 		"statusformatl":           "$(filename) $(modified)($(line),$(col)) $(opt:filetype)",
-		"statusformatr":           "$(bind:ToggleHelp): ajuda | Ctrl-p: arquivos | Alt-t: arvore",
+		"statusformatr":           "$(bind:ToggleHelp): help | Ctrl-p: files | Alt-t: tree",
 		"tabsize":                 4,
 		"tabstospaces":            true,
 		"ft:go":                   map[string]any{"tabstospaces": false, "tabsize": 4},

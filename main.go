@@ -5,18 +5,19 @@ import (
 	"os"
 )
 
-const version = "0.3.0"
+const version = "0.4.0"
 
-const usage = `nani — navegador de pastas e editor leve com LSP
+const usage = `nani — folder browser and lightweight editor with LSP
 
-uso:
-  nani [dir]              navega pastas e abre arquivos no micro
-  nani setup              instala e configura micro, plugins, gopls e tsgo
-  nani lsp <cmd> [args]   ponte LSP para servidores que só fazem pull diagnostics
-  nani version            mostra a versão
+usage:
+  nani [dir]              browse folders and open files in micro
+  nani setup              install and configure micro, plugins, gopls and tsgo
+  nani lsp <cmd> [args]   LSP bridge for servers that only do pull diagnostics
+  nani version            show the version
 
-variáveis:
-  NANI_LSP_LOG            caminho de log do proxy LSP (diagnóstico de problemas)
+environment:
+  NANI_EDITOR             editor to open instead of micro
+  NANI_LSP_LOG            path to the LSP proxy log
 `
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 	switch args[0] {
 	case "lsp":
 		if len(args) < 2 {
-			fail(fmt.Errorf("nani lsp precisa do comando do servidor. ex: nani lsp tsgo --lsp -stdio"))
+			fail(fmt.Errorf("nani lsp needs the server command. e.g.: nani lsp tsgo --lsp -stdio"))
 		}
 		if err := runLSPProxy(args[1], args[2:]); err != nil {
 			fail(err)

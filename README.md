@@ -9,13 +9,13 @@
 [![plataforma](https://img.shields.io/badge/Linux-x86__64-50fa7b?style=flat-square&labelColor=282a36&logo=linux&logoColor=50fa7b)](https://github.com/JohnnyBoySou/nani/releases)
 [![binário estático](https://img.shields.io/badge/binário-estático-ff79c6?style=flat-square&labelColor=282a36)](https://github.com/JohnnyBoySou/nani/releases)
 
-<img src="docs/browser.svg" alt="nani navegando pelas pastas com preview do arquivo" width="820">
+<img src="docs/browser.svg" alt="nani navegando pelas pastas com as setas e preview do arquivo" width="820">
 
 </div>
 
 ## A ideia
 
-Listar as pastas, escolher uma, escolher um arquivo, editar, voltar para a lista.
+Andar pelas pastas com as setas, abrir um arquivo, editar, voltar para onde estava.
 Nada de modo normal, modo inserção, `:wq` ou meia hora de configuração.
 
 O editor é o [micro](https://micro-editor.github.io/): `Ctrl+S` salva, `Ctrl+Q`
@@ -77,9 +77,22 @@ nani            # navega a partir da pasta atual (ou de ~/work, se chamado do ho
 nani ~/projetos # navega a partir de uma pasta específica
 ```
 
-`Enter` entra na pasta e depois abre o arquivo. `Esc` na lista de arquivos volta
-para as pastas; `Esc` nas pastas encerra. Ao fechar o editor você cai de volta na
-lista, pronto para o próximo arquivo.
+A navegação é por setas, como num gerenciador de arquivos:
+
+| tecla | ação |
+| --- | --- |
+| <kbd>→</kbd> | entra na pasta (num arquivo, abre) |
+| <kbd>←</kbd> | volta um nível |
+| <kbd>Enter</kbd> | abre o arquivo, ou entra na pasta |
+| <kbd>Esc</kbd> | sai |
+
+Cada nível mostra as pastas primeiro e os arquivos depois, com `../` no topo para
+subir. Ao voltar, o cursor já vem posicionado na pasta de onde você saiu — dá para
+descer, olhar e voltar sem perder o lugar. Digitar a qualquer momento filtra a
+lista.
+
+Ao fechar o editor você cai de volta na mesma pasta, pronto para o próximo
+arquivo.
 
 Com `fzf` instalado a busca é fuzzy e com preview — `bat` para arquivos, `eza`
 para árvores de pasta. Sem `fzf`, cai num seletor numerado que funciona em
@@ -156,12 +169,12 @@ O log mostra o handshake, os requests respondidos e quantos diagnósticos vieram
 em cada consulta:
 
 ```
-proxy iniciado: tsgo --lsp -stdio
-initialize do cliente, capabilities de pull injetadas
-respondendo request do servidor: workspace/configuration
-respondendo request do servidor: client/registerCapability
--> pedindo diagnósticos de file:///.../index.ts (id nani-diag-1)
-<- 1 diagnóstico(s) para file:///.../index.ts
+proxy started: tsgo --lsp -stdio
+client initialize, pull capabilities injected
+answering server request: workspace/configuration
+answering server request: client/registerCapability
+-> requesting diagnostics for file:///.../index.ts (id nani-diag-1)
+<- 1 diagnostic(s) for file:///.../index.ts
 ```
 
 Nenhum diagnóstico aparecendo costuma ser uma destas causas:

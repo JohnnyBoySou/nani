@@ -78,13 +78,13 @@ func readMessage(r *bufio.Reader) (message, []byte, error) {
 			if strings.EqualFold(strings.TrimSpace(name), "Content-Length") {
 				length, err = strconv.Atoi(strings.TrimSpace(value))
 				if err != nil {
-					return nil, nil, fmt.Errorf("Content-Length inválido: %w", err)
+					return nil, nil, fmt.Errorf("invalid Content-Length: %w", err)
 				}
 			}
 		}
 	}
 	if length <= 0 {
-		return nil, nil, fmt.Errorf("frame sem Content-Length")
+		return nil, nil, fmt.Errorf("frame without Content-Length")
 	}
 	body := make([]byte, length)
 	if _, err := io.ReadFull(r, body); err != nil {
@@ -197,7 +197,7 @@ func (p *proxy) requestDiagnostics(uri string) {
 	p.pending[id] = uri
 	p.pendingMu.Unlock()
 
-	p.logf("-> pedindo diagnósticos de %s (id %s)", uri, id)
+	p.logf("-> requesting diagnostics for %s (id %s)", uri, id)
 	err := p.sendToServer(message{
 		"jsonrpc": "2.0",
 		"id":      id,
@@ -205,7 +205,7 @@ func (p *proxy) requestDiagnostics(uri string) {
 		"params":  map[string]any{"textDocument": map[string]any{"uri": uri}},
 	})
 	if err != nil {
-		p.logf("falha ao pedir diagnósticos: %v", err)
+		p.logf("failed to request diagnostics: %v", err)
 	}
 }
 
@@ -224,7 +224,7 @@ func (p *proxy) handleDiagnosticResponse(msg message) bool {
 	// Servidor sem suporte a pull responde erro. Publicar uma lista vazia aqui
 	// apagaria os diagnósticos que ele já mandou por push.
 	if e, ok := msg["error"]; ok {
-		p.logf("servidor recusou o pull de diagnósticos (%v); mantendo os do push", e)
+		p.logf("server refused pull diagnostics (%v); keeping the pushed ones", e)
 		return true
 	}
 
@@ -234,14 +234,14 @@ func (p *proxy) handleDiagnosticResponse(msg message) bool {
 			items = got
 		}
 	}
-	p.logf("<- %d diagnóstico(s) para %s", len(items), uri)
+	p.logf("<- %d diagnostic(s) for %s", len(items), uri)
 	err := p.sendToClient(message{
 		"jsonrpc": "2.0",
 		"method":  "textDocument/publishDiagnostics",
 		"params":  map[string]any{"uri": uri, "diagnostics": items},
 	})
 	if err != nil {
-		p.logf("falha ao publicar diagnósticos: %v", err)
+		p.logf("failed to publish diagnostics: %v", err)
 	}
 	return true
 }
@@ -275,9 +275,9 @@ func (p *proxy) answerServerRequest(msg message) bool {
 	default:
 		return false
 	}
-	p.logf("respondendo request do servidor: %s", method)
+	p.logf("answering server request: %s", method)
 	if err := p.sendToServer(message{"jsonrpc": "2.0", "id": msg["id"], "result": result}); err != nil {
-		p.logf("falha ao responder %s: %v", method, err)
+		p.logf("failed to answer %s: %v", method, err)
 	}
 	return true
 }
@@ -300,7 +300,7 @@ func (p *proxy) clientToServer(in io.Reader) error {
 		switch method {
 		case "initialize":
 			addPullCapabilities(msg)
-			p.logf("initialize do cliente, capabilities de pull injetadas")
+			p.logf("client initialize, pull capabilities injected")
 		case "textDocument/didOpen", "textDocument/didChange", "textDocument/didSave":
 			p.scheduleDiagnostics(uriOf(msg))
 		case "textDocument/didClose":
@@ -367,11 +367,11 @@ func runLSPProxy(server string, args []string) error {
 		return err
 	}
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("não consegui iniciar %s: %w", server, err)
+		return fmt.Errorf("could not start %s: %w", server, err)
 	}
 
 	p := newProxy(stdin, os.Stdout, debug)
-	p.logf("proxy iniciado: %s %s", server, strings.Join(args, " "))
+	p.logf("proxy started: %s %s", server, strings.Join(args, " "))
 
 	errc := make(chan error, 2)
 	go func() { errc <- p.clientToServer(os.Stdin) }()
