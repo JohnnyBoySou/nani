@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="956" height="427" viewBox="0 0 956 427" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="14.0">
+<rect width="956" height="427" rx="10" fill="#1a1b26"/>
+<rect x="0" y="34.0" width="956" height="393" fill="#282a36"/>
+<g><circle cx="22" cy="17" r="6" fill="#ff5f56"/><circle cx="42" cy="17" r="6" fill="#ffbd2e"/><circle cx="62" cy="17" r="6" fill="#27c93f"/></g>
+<text x="478" y="22" fill="#6272a4" font-size="12" text-anchor="middle">nani — escolhendo o arquivo</text>
+<text x="24.4" y="61.2" fill="#6272a4" xml:space="preserve">╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮</text>
+<text x="24.4" y="80.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="80.2" fill="#bd93f9" font-weight="bold" xml:space="preserve">arquivo ❯ </text>
+<text x="142.0" y="80.2" fill="#bd93f9" font-weight="bold" xml:space="preserve"> &lt; </text>
+<text x="167.2" y="80.2" fill="#afaf87" xml:space="preserve">7/7</text>
+<text x="192.4" y="80.2" fill="#6272a4" xml:space="preserve"> ──────────────────────</text>
+<text x="394.0" y="80.2" fill="#6272a4" xml:space="preserve">╭───────────────────────────────────────────────────────────╮</text>
+<text x="923.2" y="80.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="99.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="66.4" y="99.2" fill="#87afaf" xml:space="preserve">/tmp/demo/nani</text>
+<text x="394.0" y="99.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="99.2" fill="#839496" xml:space="preserve">   1</text>
+<text x="452.8" y="99.2" fill="#f92672" xml:space="preserve">package</text>
+<text x="520.0" y="99.2" fill="#ffffff" xml:space="preserve">main</text>
+<rect x="847.6" y="88.0" width="42.0" height="19.0" fill="#afaf87"/>
+<text x="847.6" y="99.2" fill="#282a36" xml:space="preserve">1/388</text>
+<text x="889.6" y="99.2" fill="#6272a4" xml:space="preserve">││</text>
+<text x="923.2" y="99.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="118.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="66.4" y="118.2" fill="#87afaf" xml:space="preserve">Enter edita · Esc volta às pastas</text>
+<text x="394.0" y="118.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="118.2" fill="#839496" xml:space="preserve">   2</text>
+<text x="889.6" y="118.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="118.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="137.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="137.2" fill="#303030" xml:space="preserve">▌</text>
+<text x="58.0" y="137.2" fill="#f8f8f2" xml:space="preserve"> README.md                              </text>
+<text x="394.0" y="137.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="137.2" fill="#839496" xml:space="preserve">   3</text>
+<text x="452.8" y="137.2" fill="#75715e" xml:space="preserve">// Proxy LSP entre um cliente que só entende diagnós</text>
+<text x="889.6" y="137.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="137.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="156.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="156.2" fill="#303030" xml:space="preserve">▌</text>
+<text x="58.0" y="156.2" fill="#f8f8f2" xml:space="preserve"> browser.go                             </text>
+<text x="394.0" y="156.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="156.2" fill="#839496" xml:space="preserve">   4</text>
+<text x="452.8" y="156.2" fill="#75715e" xml:space="preserve">// micro) e um servidor que os entrega por pull (o t</text>
+<text x="889.6" y="156.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="156.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="175.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="175.2" fill="#303030" xml:space="preserve">▌</text>
+<text x="58.0" y="175.2" fill="#f8f8f2" xml:space="preserve"> build.sh                               </text>
+<text x="394.0" y="175.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="175.2" fill="#839496" xml:space="preserve">   5</text>
+<text x="452.8" y="175.2" fill="#75715e" xml:space="preserve">//</text>
+<text x="889.6" y="175.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="175.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="194.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="194.2" fill="#303030" xml:space="preserve">▌</text>
+<text x="58.0" y="194.2" fill="#f8f8f2" xml:space="preserve"> go.mod                                 </text>
+<text x="394.0" y="194.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="194.2" fill="#839496" xml:space="preserve">   6</text>
+<text x="452.8" y="194.2" fill="#75715e" xml:space="preserve">// O que ele faz, além de repassar as mensagens:</text>
+<text x="889.6" y="194.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="194.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="213.2" fill="#6272a4" xml:space="preserve">│ </text>
+<rect x="49.6" y="202.0" width="8.4" height="19.0" fill="#303030"/>
+<text x="49.6" y="213.2" fill="#ff79c6" font-weight="bold" xml:space="preserve">▶</text>
+<rect x="58.0" y="202.0" width="8.4" height="19.0" fill="#303030"/>
+<rect x="66.4" y="202.0" width="50.4" height="19.0" fill="#303030"/>
+<text x="66.4" y="213.2" fill="#e4e4e4" font-weight="bold" xml:space="preserve">lsp.go</text>
+<text x="394.0" y="213.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="213.2" fill="#839496" xml:space="preserve">   7</text>
+<text x="452.8" y="213.2" fill="#75715e" xml:space="preserve">//   - anuncia ao servidor as capabilities de pull q</text>
+<text x="889.6" y="213.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="213.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="232.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="232.2" fill="#303030" xml:space="preserve">▌</text>
+<text x="58.0" y="232.2" fill="#f8f8f2" xml:space="preserve"> main.go                                </text>
+<text x="394.0" y="232.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="232.2" fill="#839496" xml:space="preserve">   8</text>
+<text x="452.8" y="232.2" fill="#75715e" xml:space="preserve">//   - responde sozinho aos requests do servidor (wo</text>
+<text x="889.6" y="232.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="232.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="251.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="49.6" y="251.2" fill="#303030" xml:space="preserve">▌</text>
+<text x="58.0" y="251.2" fill="#f8f8f2" xml:space="preserve"> setup.go                               </text>
+<text x="394.0" y="251.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="251.2" fill="#839496" xml:space="preserve">   9</text>
+<text x="452.8" y="251.2" fill="#75715e" xml:space="preserve">//     client/registerCapability), que bloqueiam o t</text>
+<text x="889.6" y="251.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="251.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="270.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="270.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="270.2" fill="#839496" xml:space="preserve">  10</text>
+<text x="452.8" y="270.2" fill="#75715e" xml:space="preserve">//   - a cada didOpen/didChange/didSave pede textDoc</text>
+<text x="889.6" y="270.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="270.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="289.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="289.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="289.2" fill="#839496" xml:space="preserve">  11</text>
+<text x="452.8" y="289.2" fill="#75715e" xml:space="preserve">//     a resposta em textDocument/publishDiagnostics</text>
+<text x="889.6" y="289.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="289.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="308.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="308.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="308.2" fill="#839496" xml:space="preserve">  12</text>
+<text x="889.6" y="308.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="308.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="327.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="327.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="327.2" fill="#839496" xml:space="preserve">  13</text>
+<text x="452.8" y="327.2" fill="#f92672" xml:space="preserve">import</text>
+<text x="503.2" y="327.2" fill="#f8f8f2" xml:space="preserve"> (                                            </text>
+<text x="889.6" y="327.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="327.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="346.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="346.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="346.2" fill="#839496" xml:space="preserve">  14</text>
+<text x="486.4" y="346.2" fill="#e6db74" xml:space="preserve">"bufio"</text>
+<text x="889.6" y="346.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="346.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="365.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="365.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="365.2" fill="#839496" xml:space="preserve">  15</text>
+<text x="486.4" y="365.2" fill="#e6db74" xml:space="preserve">"encoding/json"</text>
+<text x="889.6" y="365.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="365.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="384.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="384.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="384.2" fill="#839496" xml:space="preserve">  16</text>
+<text x="486.4" y="384.2" fill="#e6db74" xml:space="preserve">"fmt"</text>
+<text x="889.6" y="384.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="384.2" fill="#6272a4" xml:space="preserve">│</text>
+<text x="24.4" y="403.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="394.0" y="403.2" fill="#6272a4" xml:space="preserve">│ </text>
+<text x="410.8" y="403.2" fill="#839496" xml:space="preserve">  17</text>
+<text x="486.4" y="403.2" fill="#e6db74" xml:space="preserve">"io"</text>
+<text x="889.6" y="403.2" fill="#6272a4" xml:space="preserve"> │</text>
+<text x="923.2" y="403.2" fill="#6272a4" xml:space="preserve">│</text>
+</svg>

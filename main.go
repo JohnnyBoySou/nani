@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-const version = "0.2.0"
+const version = "0.3.0"
 
 const usage = `nani — navegador de pastas e editor leve com LSP
 

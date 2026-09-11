@@ -299,7 +299,7 @@ func writeMicroConfig(home, naniPath string) error {
 		"colorscheme":             "dracula-tc",
 		"lsp.server":              lspServer,
 		"lsp.formatOnSave":        true,
-		"lsp.autocompleteDetails": true,
+		"lsp.autocompleteDetails": false,
 		"lsp.tabcompletion":       false,
 		"autoindent":              true,
 		"clipboard":               "external",

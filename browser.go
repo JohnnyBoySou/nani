@@ -13,7 +13,8 @@ import (
 	"strings"
 )
 
-// Diretórios que nunca interessam na navegação.
+// Diretórios ignorados fora de um repositório git — dentro de um, quem manda é
+// o .gitignore.
 var skipDirs = map[string]bool{
 	".git": true, "node_modules": true, "vendor": true, "dist": true,
 	"build": true, ".next": true, "target": true, ".cache": true,
@@ -106,7 +107,50 @@ func isDir(path string) bool {
 	return err == nil && info.IsDir()
 }
 
+// gitFiles devolve o que o git mostraria dentro de dir: arquivos rastreados mais
+// os não rastreados, menos tudo que o .gitignore (e o exclude global) descarta.
+// O segundo retorno é false quando dir não está num repositório.
+func gitFiles(dir string) ([]string, bool) {
+	cmd := exec.Command("git", "ls-files", "--cached", "--others", "--exclude-standard", "-z")
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, false
+	}
+	var files []string
+	for _, name := range strings.Split(string(out), "\x00") {
+		if name != "" {
+			files = append(files, name)
+		}
+	}
+	return files, true
+}
+
+// dirsFromFiles deriva a lista de pastas a partir dos arquivos visíveis. Uma
+// pasta inteira ignorada, como node_modules, simplesmente não aparece.
+func dirsFromFiles(files []string, maxDepth int) []string {
+	seen := map[string]bool{}
+	for _, file := range files {
+		dir := filepath.Dir(file)
+		for dir != "." && dir != string(filepath.Separator) {
+			if strings.Count(dir, string(filepath.Separator))+1 <= maxDepth {
+				seen[dir] = true
+			}
+			dir = filepath.Dir(dir)
+		}
+	}
+	out := []string{"."}
+	for dir := range seen {
+		out = append(out, dir)
+	}
+	sort.Strings(out)
+	return out
+}
+
 func listDirs(root string, maxDepth int) ([]string, error) {
+	if files, ok := gitFiles(root); ok {
+		return dirsFromFiles(files, maxDepth), nil
+	}
 	out := []string{"."}
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -136,6 +180,10 @@ func listDirs(root string, maxDepth int) ([]string, error) {
 }
 
 func listFiles(dir string) ([]string, error) {
+	if files, ok := gitFiles(dir); ok {
+		sort.Strings(files)
+		return files, nil
+	}
 	var out []string
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -162,7 +210,8 @@ func listFiles(dir string) ([]string, error) {
 
 func previewDirCmd(root string) string {
 	if _, err := exec.LookPath("eza"); err == nil {
-		return "eza --tree --level=2 --icons --color=always " + shellQuote(root) + "/{} 2>/dev/null | head -300"
+		// --git-ignore para o preview não mostrar o que a listagem já esconde.
+		return "eza --tree --level=2 --icons --color=always --git-ignore " + shellQuote(root) + "/{} 2>/dev/null | head -300"
 	}
 	return "ls -A " + shellQuote(root) + "/{} 2>/dev/null | head -300"
 }
