@@ -10,7 +10,7 @@
 <rect x="133.6" y="50.0" width="50.4" height="19.0" fill="#44475a"/>
 <text x="133.6" y="61.2" fill="#50fa7b" xml:space="preserve">greet(</text>
 <rect x="184.0" y="50.0" width="33.6" height="19.0" fill="#44475a"/>
-<text x="184.0" y="61.2" fill="#f8f8f2" xml:space="preserve">nome</text>
+<text x="184.0" y="61.2" fill="#f8f8f2" xml:space="preserve">name</text>
 <rect x="217.6" y="50.0" width="8.4" height="19.0" fill="#44475a"/>
 <text x="217.6" y="61.2" fill="#ff79c6" xml:space="preserve">:</text>
 <rect x="226.0" y="50.0" width="8.4" height="19.0" fill="#44475a"/>
@@ -28,27 +28,27 @@
 <text x="368.8" y="61.2" fill="#f8f8f2" xml:space="preserve">{                                                     </text>
 <text x="32.8" y="80.2" fill="#6272a4" xml:space="preserve"> 2   </text>
 <text x="74.8" y="80.2" fill="#ff79c6" xml:space="preserve">return</text>
-<text x="133.6" y="80.2" fill="#f1fa8c" xml:space="preserve">`olá,</text>
-<text x="184.0" y="80.2" fill="#50fa7b" xml:space="preserve">${nome}</text>
-<text x="242.8" y="80.2" fill="#f1fa8c" xml:space="preserve">`</text>
-<text x="251.2" y="80.2" fill="#f8f8f2" xml:space="preserve">;                                                                   </text>
+<text x="133.6" y="80.2" fill="#f1fa8c" xml:space="preserve">`hello,</text>
+<text x="200.8" y="80.2" fill="#50fa7b" xml:space="preserve">${name}</text>
+<text x="259.6" y="80.2" fill="#f1fa8c" xml:space="preserve">`</text>
+<text x="268.0" y="80.2" fill="#f8f8f2" xml:space="preserve">;                                                                 </text>
 <text x="32.8" y="99.2" fill="#6272a4" xml:space="preserve"> 3 </text>
 <text x="58.0" y="99.2" fill="#f8f8f2" xml:space="preserve">}                                                                                          </text>
 <text x="32.8" y="118.2" fill="#6272a4" xml:space="preserve"> 4 </text>
 <text x="16.0" y="137.2" fill="#ff5555" xml:space="preserve">&gt;&gt;</text>
 <text x="32.8" y="137.2" fill="#6272a4" xml:space="preserve"> 5 </text>
 <text x="58.0" y="137.2" fill="#ff79c6" xml:space="preserve">const</text>
-<text x="108.4" y="137.2" fill="#f8f8f2" xml:space="preserve">msg</text>
-<text x="133.6" y="137.2" fill="#ff79c6" xml:space="preserve">:</text>
-<text x="150.4" y="137.2" fill="#8be9fd" xml:space="preserve">number</text>
-<text x="209.2" y="137.2" fill="#ff79c6" xml:space="preserve">=</text>
-<text x="226.0" y="137.2" fill="#50fa7b" xml:space="preserve">greet(</text>
-<text x="276.4" y="137.2" fill="#f1fa8c" xml:space="preserve">"mundo"</text>
-<text x="335.2" y="137.2" fill="#f8f8f2" xml:space="preserve">);                                                        </text>
+<text x="108.4" y="137.2" fill="#f8f8f2" xml:space="preserve">message</text>
+<text x="167.2" y="137.2" fill="#ff79c6" xml:space="preserve">:</text>
+<text x="184.0" y="137.2" fill="#8be9fd" xml:space="preserve">number</text>
+<text x="242.8" y="137.2" fill="#ff79c6" xml:space="preserve">=</text>
+<text x="259.6" y="137.2" fill="#50fa7b" xml:space="preserve">greet(</text>
+<text x="310.0" y="137.2" fill="#f1fa8c" xml:space="preserve">"world"</text>
+<text x="368.8" y="137.2" fill="#f8f8f2" xml:space="preserve">);                                                    </text>
 <text x="32.8" y="156.2" fill="#6272a4" xml:space="preserve"> 6 </text>
 <text x="58.0" y="156.2" fill="#f8f8f2" xml:space="preserve">console.</text>
 <text x="125.2" y="156.2" fill="#50fa7b" xml:space="preserve">log(</text>
-<text x="158.8" y="156.2" fill="#f8f8f2" xml:space="preserve">msg);                                                                          </text>
+<text x="158.8" y="156.2" fill="#f8f8f2" xml:space="preserve">message);                                                                      </text>
 <text x="32.8" y="175.2" fill="#6272a4" xml:space="preserve"> 7 </text>
 <rect x="16.0" y="202.0" width="806.4" height="19.0" fill="#f8f8f2"/>
 <text x="16.0" y="213.2" fill="#282a36" xml:space="preserve">index.ts (1,1) typescript                             Ctrl-g: help | Ctrl-p: files | Alt-t: tree</text>

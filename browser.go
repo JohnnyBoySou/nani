@@ -12,28 +12,27 @@ import (
 	"strings"
 )
 
-// Diretórios ignorados fora de um repositório git — dentro de um, quem manda é
-// o .gitignore.
+// Folders skipped outside a git repository — inside one, the .gitignore decides.
 var skipDirs = map[string]bool{
 	".git": true, "node_modules": true, "vendor": true, "dist": true,
 	"build": true, ".next": true, "target": true, ".cache": true,
 	".venv": true, "__pycache__": true,
 }
 
-// Arquivos que marcam a raiz de um projeto. O micro usa o próprio cwd como
-// rootUri do LSP, então o editor precisa abrir a partir daqui — de dentro de um
-// subdiretório, gopls e tsgo não resolvem os imports.
+// Files that mark the root of a project. micro uses its own cwd as the LSP
+// rootUri, so the editor has to open from here — from inside a subfolder, gopls
+// and tsgo fail to resolve imports.
 var rootMarkers = []string{"go.mod", "go.work", "package.json", "tsconfig.json", "deno.json", ".git"}
 
-// errCancelled indica que a pessoa saiu do seletor (Esc ou Ctrl-C).
-var errCancelled = errors.New("cancelado")
+// errCancelled means the person left the picker (Esc or Ctrl-C).
+var errCancelled = errors.New("cancelled")
 
-// upEntry é a linha que sobe um nível, equivalente à seta para a esquerda.
+// upEntry is the row that goes up one level, same as the left arrow.
 const upEntry = "../"
 
 type entry struct {
-	label string // como aparece na lista: "src/" para pasta, "main.go" para arquivo
-	path  string // caminho absoluto
+	label string // as shown in the list: "src/" for a folder, "main.go" for a file
+	path  string // absolute path
 	isDir bool
 }
 
@@ -44,7 +43,7 @@ func runBrowser(dir string) error {
 	}
 	editor := editorCommand()
 
-	// Ao subir, o cursor volta posicionado na pasta de onde se saiu.
+	// When going up, the cursor lands on the folder we just left.
 	cameFrom := ""
 
 	for {
@@ -75,17 +74,17 @@ func runBrowser(dir string) error {
 	}
 }
 
-// parentOf sobe um nível e devolve de onde veio, para reposicionar o cursor.
+// parentOf goes up one level and reports where it came from, to place the cursor.
 func parentOf(dir string) (string, string) {
 	parent := filepath.Dir(dir)
 	if parent == dir {
-		return dir, "" // já está na raiz do sistema de arquivos
+		return dir, "" // already at the filesystem root
 	}
 	return parent, filepath.Base(dir) + "/"
 }
 
-// listEntries devolve o conteúdo imediato do diretório: pastas primeiro, depois
-// arquivos. Dentro de um repositório, respeita o .gitignore.
+// listEntries returns the immediate contents of the folder: folders first, then
+// files. Inside a repository, it honours the .gitignore.
 func listEntries(dir string) ([]entry, error) {
 	dirs, files, err := childrenOf(dir)
 	if err != nil {
@@ -107,7 +106,7 @@ func listEntries(dir string) ([]entry, error) {
 	return out, nil
 }
 
-// childrenOf separa pastas e arquivos do nível imediato.
+// childrenOf splits folders and files of the immediate level.
 func childrenOf(dir string) (dirs, files []string, err error) {
 	if tracked, ok := gitFiles(dir); ok {
 		seenDir := map[string]bool{}
@@ -124,7 +123,7 @@ func childrenOf(dir string) (dirs, files []string, err error) {
 		return dirs, files, nil
 	}
 
-	// Fora de um repositório: lê o diretório e aplica a lista fixa.
+	// Outside a repository: read the folder and apply the fixed skip list.
 	items, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, nil, err
@@ -141,9 +140,9 @@ func childrenOf(dir string) (dirs, files []string, err error) {
 	return dirs, files, nil
 }
 
-// gitFiles devolve o que o git mostraria dentro de dir: arquivos rastreados mais
-// os não rastreados, menos tudo que o .gitignore (e o exclude global) descarta.
-// O segundo retorno é false quando dir não está num repositório.
+// gitFiles returns what git would show inside dir: tracked files plus untracked
+// ones, minus everything the .gitignore (and the global exclude) drops. The second
+// return is false when dir is not inside a repository.
 func gitFiles(dir string) ([]string, bool) {
 	cmd := exec.Command("git", "ls-files", "--cached", "--others", "--exclude-standard", "-z")
 	cmd.Dir = dir
@@ -166,7 +165,7 @@ func resolveRoot(dir string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		// Chamado direto do home, o diretório de trabalho é o alvo mais provável.
+		// Called straight from home, the work folder is the likely target.
 		if home, err := os.UserHomeDir(); err == nil && cwd == home {
 			if work := filepath.Join(home, "work"); isDir(work) {
 				return work, nil
@@ -189,12 +188,12 @@ func isDir(path string) bool {
 	return err == nil && info.IsDir()
 }
 
-// previewCmd mostra árvore para pastas e conteúdo para arquivos.
+// previewCmd shows a tree for folders and the contents for files.
 func previewCmd(dir string) string {
 	target := shellQuote(dir) + "/{}"
 	tree := "ls -A"
 	if _, err := exec.LookPath("eza"); err == nil {
-		// --git-ignore para o preview não mostrar o que a listagem já esconde.
+		// --git-ignore so the preview does not show what the listing already hides.
 		tree = "eza --tree --level=2 --icons --color=always --git-ignore"
 	}
 	file := "head -500"
@@ -209,8 +208,8 @@ func shellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
 
-// pick mostra o conteúdo da pasta e devolve o item escolhido mais a tecla usada
-// ("left" para voltar, "" para Enter, "right" para entrar).
+// pick shows the folder contents and returns the chosen item plus the key used
+// ("left" to go back, "" for Enter, "right" to enter).
 func pick(entries []entry, cwd, cameFrom string) (entry, string, error) {
 	if _, err := exec.LookPath("fzf"); err == nil {
 		return pickFzf(entries, cwd, cameFrom)
@@ -230,12 +229,12 @@ func pickFzf(entries []entry, cwd, cameFrom string) (entry, string, error) {
 		"--preview=" + previewCmd(cwd),
 		"--preview-window=right,55%",
 		"--height=100%",
-		// Explícito para não depender do FZF_DEFAULT_OPTS de cada máquina.
+		// Explicit so it does not depend on each machine's FZF_DEFAULT_OPTS.
 		"--layout=reverse",
-		// As setas deixam de andar pela busca e passam a navegar pelas pastas.
+		// The arrows stop moving through the query and start navigating folders.
 		"--expect=right,left",
 	}
-	// Ao voltar, o cursor começa na pasta de onde se saiu.
+	// Coming back, the cursor starts on the folder we left.
 	if cameFrom != "" {
 		for i, label := range labels {
 			if label == cameFrom {
@@ -252,7 +251,7 @@ func pickFzf(entries []entry, cwd, cameFrom string) (entry, string, error) {
 	if err != nil {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) {
-			// 1 = nada casou, 130 = interrompido pela pessoa.
+			// 1 = no match, 130 = interrupted by the person.
 			if exit.ExitCode() == 1 || exit.ExitCode() == 130 {
 				return entry{}, "", errCancelled
 			}
@@ -260,8 +259,8 @@ func pickFzf(entries []entry, cwd, cameFrom string) (entry, string, error) {
 		return entry{}, "", err
 	}
 
-	// Com --expect, a primeira linha é a tecla (vazia no Enter) e a segunda é a
-	// escolha.
+	// With --expect, the first line is the key (empty on Enter) and the second is
+	// the choice.
 	lines := strings.Split(strings.TrimRight(string(out), "\n"), "\n")
 	if len(lines) < 2 {
 		return entry{}, "", errCancelled
@@ -312,8 +311,8 @@ func editorCommand() string {
 	return "nano"
 }
 
-// openEditor abre o arquivo com o cwd na raiz do projeto, que é de onde o LSP
-// enxerga o workspace.
+// openEditor opens the file with the cwd at the project root, which is where the
+// LSP sees the workspace.
 func openEditor(editor, path string) error {
 	cmd := exec.Command(editor, path)
 	cmd.Dir = projectRoot(path)

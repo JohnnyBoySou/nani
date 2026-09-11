@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-// runSetup deixa a máquina pronta: editor, plugins, language servers e config.
-// É idempotente — rodar de novo só preenche o que falta.
+// runSetup gets the machine ready: editor, plugins, language servers and config.
+// It is idempotent — running again only fills in what is missing.
 func runSetup() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -90,8 +90,8 @@ func run(name string, args ...string) error {
 	return cmd.Run()
 }
 
-// installSelf copia o binário para o PATH, para que baixar o arquivo da release
-// e rodar o setup baste — sem passo manual de instalação.
+// installSelf copies the binary into the PATH, so downloading the release file
+// and running setup is enough — no manual install step.
 func installSelf(binDir string) (string, error) {
 	self, err := os.Executable()
 	if err != nil {
@@ -102,7 +102,7 @@ func installSelf(binDir string) (string, error) {
 	}
 	dest := filepath.Join(binDir, "nani")
 	if self == dest {
-		return dest, nil // já é o binário instalado
+		return dest, nil // already the installed binary
 	}
 
 	src, err := os.Open(self)
@@ -111,8 +111,8 @@ func installSelf(binDir string) (string, error) {
 	}
 	defer src.Close()
 
-	// Grava ao lado e renomeia: sobrescrever direto falha quando a versão
-	// antiga está em execução.
+	// Write alongside and rename: overwriting in place fails while the old
+	// version is running.
 	tmp, err := os.CreateTemp(binDir, ".nani-*")
 	if err != nil {
 		return "", err
@@ -134,8 +134,8 @@ func installSelf(binDir string) (string, error) {
 	return dest, nil
 }
 
-// ensureMicro devolve o caminho do micro, baixando o binário estático da última
-// release quando ele ainda não existe.
+// ensureMicro returns micro's path, downloading the static binary from the latest
+// release when it is not there yet.
 func ensureMicro(binDir string) (string, error) {
 	if path, ok := haveCmd("micro"); ok {
 		return path, nil
@@ -164,7 +164,7 @@ func ensureMicro(binDir string) (string, error) {
 	return target, nil
 }
 
-// microAssetURL escolhe o arquivo da última release para o sistema atual.
+// microAssetURL picks the file from the latest release for the current system.
 func microAssetURL() (string, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Get("https://api.github.com/repos/zyedidia/micro/releases/latest")
@@ -203,7 +203,7 @@ func microAssetURL() (string, error) {
 	return "", fmt.Errorf("could not find %s in the latest micro release", want)
 }
 
-// extractMicro tira o executável de dentro do .tar.gz e o grava em dest.
+// extractMicro pulls the executable out of the .tar.gz and writes it to dest.
 func extractMicro(r io.Reader, dest string) error {
 	gz, err := gzip.NewReader(r)
 	if err != nil {
@@ -252,13 +252,13 @@ func ensureGopls() (string, error) {
 	if path, ok := haveCmd("gopls"); ok {
 		return path, nil
 	}
-	// Instalado, mas o GOBIN ainda não está no PATH desta sessão.
+	// Installed, but GOBIN is not in this session's PATH yet.
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, "go", "bin", "gopls"), nil
 }
 
-// ensureTsgo instala o TypeScript nativo em um prefixo próprio, sem mexer nos
-// pacotes globais do npm da máquina.
+// ensureTsgo installs native TypeScript under its own prefix, without touching
+// the machine's global npm packages.
 func ensureTsgo(home, binDir string) (string, error) {
 	if path, ok := haveCmd("tsgo"); ok {
 		return path, nil
@@ -283,15 +283,15 @@ func ensureTsgo(home, binDir string) (string, error) {
 	return link, nil
 }
 
-// writeMicroConfig grava as opções sem descartar o que a pessoa já tinha.
+// writeMicroConfig writes the options without discarding what was already there.
 func writeMicroConfig(home, naniPath string) error {
 	configDir := filepath.Join(home, ".config", "micro")
 	if err := os.MkdirAll(configDir, 0o755); err != nil {
 		return err
 	}
 
-	// Os servidores sobem atrás do proxy: ele responde os requests que travam o
-	// tsgo e converte os diagnósticos de pull para push.
+	// The servers run behind the proxy: it answers the requests that block tsgo
+	// and converts diagnostics from pull to push.
 	lspServer := fmt.Sprintf("go=%s lsp gopls,typescript=%s lsp tsgo --lsp -stdio,javascript=%s lsp tsgo --lsp -stdio",
 		naniPath, naniPath, naniPath)
 
@@ -338,7 +338,7 @@ func writeMicroConfig(home, naniPath string) error {
 	return mergeJSON(filepath.Join(configDir, "bindings.json"), bindings)
 }
 
-// mergeJSON aplica as chaves novas por cima do arquivo existente.
+// mergeJSON applies the new keys on top of the existing file.
 func mergeJSON(path string, values map[string]any) error {
 	current := map[string]any{}
 	if data, err := os.ReadFile(path); err == nil {

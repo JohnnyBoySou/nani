@@ -1,14 +1,15 @@
 package main
 
-// Proxy LSP entre um cliente que só entende diagnósticos push (o plugin lsp do
-// micro) e um servidor que os entrega por pull (o tsgo, TypeScript nativo em Go).
+// LSP proxy between a client that only understands push diagnostics (micro's lsp
+// plugin) and a server that delivers them by pull (tsgo, TypeScript rewritten in
+// Go).
 //
-// O que ele faz, além de repassar as mensagens:
-//   - anuncia ao servidor as capabilities de pull que o cliente não anuncia;
-//   - responde sozinho aos requests do servidor (workspace/configuration e
-//     client/registerCapability), que bloqueiam o tsgo até receberem resposta;
-//   - a cada didOpen/didChange/didSave pede textDocument/diagnostic e converte
-//     a resposta em textDocument/publishDiagnostics para o cliente.
+// Besides forwarding messages, it:
+//   - announces to the server the pull capabilities the client does not announce;
+//   - answers the server's requests on its own (workspace/configuration and
+//     client/registerCapability), which block tsgo until they get a reply;
+//   - on every didOpen/didChange/didSave asks for textDocument/diagnostic and
+//     converts the reply into textDocument/publishDiagnostics for the client.
 
 import (
 	"bufio"
@@ -23,11 +24,11 @@ import (
 	"time"
 )
 
-// Prefixo dos ids criados aqui. Os ids do cliente são números, então uma string
-// com prefixo nunca colide com eles.
+// Prefix for the ids created here. Client ids are numbers, so a prefixed string
+// never collides with them.
 const diagIDPrefix = "nani-diag-"
 
-// debounce entre a última edição e o pedido de diagnósticos.
+// debounce between the last edit and the diagnostics request.
 const diagDebounce = 300 * time.Millisecond
 
 type message map[string]any
@@ -38,7 +39,7 @@ type proxy struct {
 	serverMu  sync.Mutex
 	clientMu  sync.Mutex
 	pendingMu sync.Mutex
-	pending   map[string]string // id do pedido de diagnóstico -> uri
+	pending   map[string]string // diagnostics request id -> uri
 	timersMu  sync.Mutex
 	timers    map[string]*time.Timer
 	diagSeq   int
@@ -62,7 +63,7 @@ func (p *proxy) logf(format string, args ...any) {
 	fmt.Fprintf(p.debugOut, time.Now().Format("15:04:05.000")+" "+format+"\n", args...)
 }
 
-// readMessage lê um frame LSP: cabeçalhos, linha em branco, corpo de N bytes.
+// readMessage reads one LSP frame: headers, blank line, N-byte body.
 func readMessage(r *bufio.Reader) (message, []byte, error) {
 	var length int
 	for {
@@ -92,8 +93,8 @@ func readMessage(r *bufio.Reader) (message, []byte, error) {
 	}
 	var msg message
 	if err := json.Unmarshal(body, &msg); err != nil {
-		// Repassa o corpo cru: não entender uma mensagem não é motivo para
-		// derrubar a conexão.
+		// Forward the raw body: failing to understand a message is no reason to
+		// drop the connection.
 		return nil, body, nil
 	}
 	return msg, body, nil
@@ -127,8 +128,8 @@ func (p *proxy) sendToClient(msg message) error {
 	return writeFrame(&p.clientMu, p.toClient, body)
 }
 
-// addPullCapabilities declara ao servidor o suporte a pull diagnostics e a
-// workspace/configuration, que o proxy responde no lugar do cliente.
+// addPullCapabilities tells the server we support pull diagnostics and
+// workspace/configuration, which the proxy answers on the client's behalf.
 func addPullCapabilities(msg message) {
 	params, ok := msg["params"].(map[string]any)
 	if !ok {
@@ -174,8 +175,8 @@ func uriOf(msg message) string {
 	return uri
 }
 
-// scheduleDiagnostics pede diagnósticos da uri após o debounce, reiniciando o
-// contador a cada nova edição do mesmo arquivo.
+// scheduleDiagnostics asks for the uri's diagnostics after the debounce, resetting
+// the timer on every new edit of the same file.
 func (p *proxy) scheduleDiagnostics(uri string) {
 	if uri == "" {
 		return
@@ -209,8 +210,8 @@ func (p *proxy) requestDiagnostics(uri string) {
 	}
 }
 
-// handleDiagnosticResponse converte a resposta do pull em uma notificação push.
-// Retorna false quando a mensagem não é uma resposta nossa.
+// handleDiagnosticResponse turns the pull reply into a push notification. Returns
+// false when the message is not a reply of ours.
 func (p *proxy) handleDiagnosticResponse(msg message) bool {
 	id, ok := msg["id"].(string)
 	if !ok || !strings.HasPrefix(id, diagIDPrefix) {
@@ -221,8 +222,8 @@ func (p *proxy) handleDiagnosticResponse(msg message) bool {
 	delete(p.pending, id)
 	p.pendingMu.Unlock()
 
-	// Servidor sem suporte a pull responde erro. Publicar uma lista vazia aqui
-	// apagaria os diagnósticos que ele já mandou por push.
+	// A server without pull support answers with an error. Publishing an empty
+	// list here would wipe the diagnostics it already pushed.
 	if e, ok := msg["error"]; ok {
 		p.logf("server refused pull diagnostics (%v); keeping the pushed ones", e)
 		return true
@@ -246,8 +247,8 @@ func (p *proxy) handleDiagnosticResponse(msg message) bool {
 	return true
 }
 
-// answerServerRequest responde aos requests que o cliente não sabe responder.
-// O tsgo fica bloqueado até recebê-los.
+// answerServerRequest replies to the requests the client does not know how to
+// answer. tsgo stays blocked until it gets them.
 func (p *proxy) answerServerRequest(msg message) bool {
 	method, _ := msg["method"].(string)
 	if _, hasID := msg["id"]; !hasID {
@@ -256,7 +257,7 @@ func (p *proxy) answerServerRequest(msg message) bool {
 	var result any
 	switch method {
 	case "workspace/configuration":
-		// Um objeto vazio por item pedido: o tsgo usa os defaults.
+		// One empty object per requested item: tsgo falls back to its defaults.
 		n := 1
 		if params, ok := msg["params"].(map[string]any); ok {
 			if items, ok := params["items"].([]any); ok {
@@ -282,7 +283,7 @@ func (p *proxy) answerServerRequest(msg message) bool {
 	return true
 }
 
-// clientToServer repassa o que vem do editor, observando as edições.
+// clientToServer forwards what comes from the editor, watching the edits.
 func (p *proxy) clientToServer(in io.Reader) error {
 	r := bufio.NewReaderSize(in, 1<<20)
 	for {
@@ -319,7 +320,7 @@ func (p *proxy) clientToServer(in io.Reader) error {
 	}
 }
 
-// serverToClient repassa o que vem do servidor, absorvendo o que é nosso.
+// serverToClient forwards what comes from the server, absorbing what is ours.
 func (p *proxy) serverToClient(out io.Reader) error {
 	r := bufio.NewReaderSize(out, 1<<20)
 	for {
@@ -345,7 +346,7 @@ func (p *proxy) serverToClient(out io.Reader) error {
 	}
 }
 
-// runLSPProxy sobe o servidor informado e faz a ponte com o editor via stdio.
+// runLSPProxy starts the given server and bridges it to the editor over stdio.
 func runLSPProxy(server string, args []string) error {
 	var debug io.Writer
 	if path := os.Getenv("NANI_LSP_LOG"); path != "" {

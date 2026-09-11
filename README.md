@@ -2,171 +2,170 @@
 
 # nani
 
-**Navegador de pastas e editor de terminal com LSP de verdade — sem virar um Neovim.**
+**A folder browser and terminal editor with real LSP — without turning into Neovim.**
 
 [![release](https://img.shields.io/github/v/release/JohnnyBoySou/nani?style=flat-square&color=bd93f9&labelColor=282a36)](https://github.com/JohnnyBoySou/nani/releases)
 [![Go](https://img.shields.io/badge/Go-1.27-8be9fd?style=flat-square&labelColor=282a36&logo=go&logoColor=8be9fd)](https://go.dev)
-[![plataforma](https://img.shields.io/badge/Linux-x86__64-50fa7b?style=flat-square&labelColor=282a36&logo=linux&logoColor=50fa7b)](https://github.com/JohnnyBoySou/nani/releases)
-[![binário estático](https://img.shields.io/badge/binário-estático-ff79c6?style=flat-square&labelColor=282a36)](https://github.com/JohnnyBoySou/nani/releases)
+[![platform](https://img.shields.io/badge/Linux-x86__64-50fa7b?style=flat-square&labelColor=282a36&logo=linux&logoColor=50fa7b)](https://github.com/JohnnyBoySou/nani/releases)
+[![static binary](https://img.shields.io/badge/binary-static-ff79c6?style=flat-square&labelColor=282a36)](https://github.com/JohnnyBoySou/nani/releases)
 
-<img src="docs/browser.svg" alt="nani navegando pelas pastas com as setas e preview do arquivo" width="820">
+<img src="docs/browser.svg" alt="nani browsing folders with the arrow keys and a file preview" width="820">
 
 </div>
 
-## A ideia
+## The idea
 
-Andar pelas pastas com as setas, abrir um arquivo, editar, voltar para onde estava.
-Nada de modo normal, modo inserção, `:wq` ou meia hora de configuração.
+Walk through the folders with the arrow keys, open a file, edit it, come back to
+where you were. No normal mode, no insert mode, no `:wq`, no half hour of config.
 
-O editor é o [micro](https://micro-editor.github.io/): `Ctrl+S` salva, `Ctrl+Q`
-sai, `Ctrl+C`/`Ctrl+V` copiam e colam, as setas andam pelo texto, e a barra de
-atalhos fica fixa no rodapé — os mesmos reflexos do nano, com o que o nano nunca
-teve.
+The editor is [micro](https://micro-editor.github.io/): `Ctrl+S` saves, `Ctrl+Q`
+quits, `Ctrl+C`/`Ctrl+V` copy and paste, the arrows move through the text, and the
+shortcut bar stays at the bottom — the same reflexes as nano, with what nano never
+had.
 
-> **Por que não o nano?** Ele não suporta LSP. Não tem sistema de plugins nem
-> canal de comunicação com um language server — só realce de sintaxe por regex.
-> Autocomplete, ir para a definição e erro sublinhado na hora não são possíveis
-> nele, por mais `.nanorc` que se escreva.
+> **Why not nano?** It has no LSP support. No plugin system, no channel to talk to
+> a language server — only regex syntax highlighting. Autocomplete, go-to-definition
+> and errors marked as you type are not possible in it, no matter how much
+> `.nanorc` you write.
 
-## O editor
+## The editor
 
-Erro de tipo apontado na linha, direto do `tsgo` — o TypeScript reescrito em Go:
+A type error marked on the line, straight from `tsgo` — TypeScript rewritten in Go:
 
-<img src="docs/editor.svg" alt="erro de tipo marcado na linha 5 pelo tsgo" width="820">
+<img src="docs/editor.svg" alt="type error marked on line 5 by tsgo" width="820">
 
-Autocomplete com assinatura da função, vindo do `gopls`:
+Autocomplete with the function signature, coming from `gopls`:
 
-<img src="docs/autocomplete.svg" alt="autocomplete do gopls mostrando fmt.Append" width="820">
+<img src="docs/autocomplete.svg" alt="gopls autocomplete showing fmt.Append" width="820">
 
-## Instalação
+## Install
 
-Baixe o binário da [última release](https://github.com/JohnnyBoySou/nani/releases)
-e rode o setup:
+Download the binary from the [latest release](https://github.com/JohnnyBoySou/nani/releases)
+and run the setup:
 
 ```bash
 chmod +x nani-linux-amd64
 ./nani-linux-amd64 setup
 ```
 
-O setup copia o próprio binário para `~/.local/bin/nani` — daí em diante o comando
-é só `nani`, de qualquer pasta. Ele é idempotente: rodar de novo só preenche o que
-falta.
+The setup copies the binary itself to `~/.local/bin/nani` — from there on the
+command is just `nani`, from any folder. It is idempotent: running it again only
+fills in what is missing.
 
-| o quê | onde |
+| what | where |
 | --- | --- |
-| o próprio `nani` | `~/.local/bin/nani` |
-| micro (binário estático da última release) | `~/.local/bin/micro` |
+| `nani` itself | `~/.local/bin/nani` |
+| micro (static binary from the latest release) | `~/.local/bin/micro` |
 | plugins `lsp`, `filemanager`, `fzf`, `detectindent`, `editorconfig` | `~/.config/micro/plug/` |
 | `gopls` (via `go install`) | `~/go/bin/gopls` |
-| `tsgo` (via `npm`, em prefixo próprio) | `~/.local/lib/tsgo` + link em `~/.local/bin/tsgo` |
-| `settings.json` e `bindings.json` | `~/.config/micro/` |
+| `tsgo` (via `npm`, under its own prefix) | `~/.local/lib/tsgo` + link in `~/.local/bin/tsgo` |
+| `settings.json` and `bindings.json` | `~/.config/micro/` |
 
-O `tsgo` vai para um prefixo separado de propósito: não mexe nos pacotes globais
-de npm da máquina.
+`tsgo` goes under a separate prefix on purpose: it does not touch the machine's
+global npm packages.
 
-Preferindo compilar:
+If you would rather build it:
 
 ```bash
 go build -o ~/.local/bin/nani .
 ```
 
-## Uso
+## Usage
 
 ```bash
-nani            # navega a partir da pasta atual (ou de ~/work, se chamado do home)
-nani ~/projetos # navega a partir de uma pasta específica
+nani            # browses from the current folder (or from ~/work, if called from home)
+nani ~/projects # browses from a specific folder
 ```
 
-A navegação é por setas, como num gerenciador de arquivos:
+Navigation is by arrow keys, like a file manager:
 
-| tecla | ação |
+| key | action |
 | --- | --- |
-| <kbd>→</kbd> | entra na pasta (num arquivo, abre) |
-| <kbd>←</kbd> | volta um nível |
-| <kbd>Enter</kbd> | abre o arquivo, ou entra na pasta |
-| <kbd>Esc</kbd> | sai |
+| <kbd>→</kbd> | enter the folder (on a file, opens it) |
+| <kbd>←</kbd> | go back one level |
+| <kbd>Enter</kbd> | open the file, or enter the folder |
+| <kbd>Esc</kbd> | quit |
 
-Cada nível mostra as pastas primeiro e os arquivos depois, com `../` no topo para
-subir. Ao voltar, o cursor já vem posicionado na pasta de onde você saiu — dá para
-descer, olhar e voltar sem perder o lugar. Digitar a qualquer momento filtra a
-lista.
+Each level lists folders first and files after, with `../` at the top to go up.
+When you come back, the cursor is already on the folder you just left — you can
+step in, look around and step out without losing your place. Typing at any point
+filters the list.
 
-Ao fechar o editor você cai de volta na mesma pasta, pronto para o próximo
-arquivo.
+Closing the editor drops you back in the same folder, ready for the next file.
 
-Com `fzf` instalado a busca é fuzzy e com preview — `bat` para arquivos, `eza`
-para árvores de pasta. Sem `fzf`, cai num seletor numerado que funciona em
-qualquer lugar.
+With `fzf` installed the search is fuzzy and previewed — `bat` for files, `eza`
+for folder trees. Without `fzf`, it falls back to a numbered picker that works
+anywhere.
 
-### Ele respeita o seu `.gitignore`
+### It honours your `.gitignore`
 
-Dentro de um repositório, a listagem é a mesma que o git enxerga: `node_modules`,
-`dist`, `.next`, `*.log` e o que mais estiver ignorado simplesmente não aparece —
-nem na lista, nem no preview. Quem decide é o `.gitignore` do projeto, mais o
-`.git/info/exclude` e o seu gitignore global.
+Inside a repository, the listing is the same one git sees: `node_modules`, `dist`,
+`.next`, `*.log` and whatever else is ignored simply does not show up — not in the
+list, not in the preview. What decides is the project's `.gitignore`, plus
+`.git/info/exclude` and your global gitignore.
 
-Fora de um repositório, vale uma lista fixa de pastas que nunca interessam
+Outside a repository, a fixed list of never-interesting folders applies
 (`node_modules`, `vendor`, `dist`, `build`, `target`, `.venv`, …).
 
-### Atalhos no editor
+### Editor shortcuts
 
-| tecla | ação |
+| key | action |
 | --- | --- |
-| `Ctrl+S` / `Ctrl+Q` | salvar / sair |
-| `Ctrl+Space` | autocomplete do LSP |
-| `Alt+k` | hover — tipo, assinatura, documentação |
-| `Alt+d` ou `Alt+g` | ir para a definição |
-| `Alt+r` | referências |
-| `Alt+f` | formatar (também roda ao salvar) |
-| `Ctrl+p` | abrir arquivo por nome |
-| `Alt+t` | árvore de arquivos lateral |
+| `Ctrl+S` / `Ctrl+Q` | save / quit |
+| `Ctrl+Space` | LSP autocomplete |
+| `Alt+k` | hover — type, signature, docs |
+| `Alt+d` or `Alt+g` | go to definition |
+| `Alt+r` | references |
+| `Alt+f` | format (also runs on save) |
+| `Ctrl+p` | open file by name |
+| `Alt+t` | side file tree |
 
-## Como o LSP funciona aqui
+## How the LSP works here
 
-O plugin LSP do micro só entende diagnósticos **push**
-(`textDocument/publishDiagnostics`). O `tsgo` entrega por **pull**
-(`textDocument/diagnostic`) e ainda fica bloqueado esperando respostas a requests
-que o plugin não responde. Sem uma ponte, o resultado é um editor em silêncio:
-nenhum erro aparece e nada indica o porquê.
+micro's LSP plugin only understands **push** diagnostics
+(`textDocument/publishDiagnostics`). `tsgo` delivers them by **pull**
+(`textDocument/diagnostic`) and, on top of that, stays blocked waiting for replies
+to requests the plugin never answers. Without a bridge the result is a silent
+editor: no error shows up and nothing hints at why.
 
-Por isso o `nani` embute um proxy LSP, que sobe entre o editor e o servidor:
+So `nani` embeds an LSP proxy that sits between the editor and the server:
 
 ```
 micro  ──stdio──>  nani lsp  ──stdio──>  gopls / tsgo
 ```
 
-Ele faz três coisas que o plugin não faz:
+It does three things the plugin does not:
 
-1. **Responde aos requests do servidor** — `workspace/configuration` e
-   `client/registerCapability`. É o que destrava o `tsgo`, que espera por eles
-   antes de responder qualquer outra coisa.
-2. **Anuncia as capabilities de pull** que o editor não anuncia, injetando-as no
-   `initialize`.
-3. **Converte pull em push** — a cada `didOpen`, `didChange` ou `didSave`, pede
-   `textDocument/diagnostic` e publica a resposta como `publishDiagnostics`, que
-   o plugin sabe desenhar.
+1. **Answers the server's requests** — `workspace/configuration` and
+   `client/registerCapability`. That is what unblocks `tsgo`, which waits for them
+   before replying to anything else.
+2. **Announces the pull capabilities** the editor does not announce, injecting them
+   into `initialize`.
+3. **Converts pull into push** — on every `didOpen`, `didChange` or `didSave` it
+   asks for `textDocument/diagnostic` and publishes the reply as
+   `publishDiagnostics`, which the plugin knows how to draw.
 
-O `gopls` passa pelo mesmo caminho. Servidor que não suporte pull responde erro, e
-nesse caso a ponte preserva os diagnósticos que ele já mandou por push, em vez de
-apagá-los com uma lista vazia.
+`gopls` goes through the same path. A server without pull support answers with an
+error, and in that case the bridge keeps the diagnostics it already pushed instead
+of wiping them with an empty list.
 
-### O editor abre na raiz do projeto
+### The editor opens at the project root
 
-O plugin usa o diretório de trabalho do editor como `rootUri`. Aberto de dentro de
-um subdiretório, `gopls` e `tsgo` não resolvem os imports. Então o `nani` sobe a
-partir do arquivo até achar `go.mod`, `go.work`, `package.json`, `tsconfig.json`,
-`deno.json` ou `.git`, e abre o editor a partir dali.
+The plugin uses the editor's working directory as `rootUri`. Opened from inside a
+subfolder, `gopls` and `tsgo` fail to resolve imports. So `nani` walks up from the
+file until it finds `go.mod`, `go.work`, `package.json`, `tsconfig.json`,
+`deno.json` or `.git`, and opens the editor from there.
 
-## Quando algo não funcionar
+## When something does not work
 
-O proxy grava log se você apontar um caminho:
+The proxy writes a log if you point it at a path:
 
 ```bash
 NANI_LSP_LOG=/tmp/nani-lsp.log nani
 ```
 
-O log mostra o handshake, os requests respondidos e quantos diagnósticos vieram
-em cada consulta:
+The log shows the handshake, the requests answered and how many diagnostics came
+back on each round:
 
 ```
 proxy started: tsgo --lsp -stdio
@@ -177,28 +176,28 @@ answering server request: client/registerCapability
 <- 1 diagnostic(s) for file:///.../index.ts
 ```
 
-Nenhum diagnóstico aparecendo costuma ser uma destas causas:
+No diagnostics showing up is usually one of these:
 
-- **o arquivo está fora de um projeto** — sem `go.mod` ou `tsconfig.json` por
-  perto, o servidor não monta o workspace;
-- **`typescript` 7 instalado como global do npm** — o `typescript-language-server`
-  procura `lib/tsserver.js`, que não existe mais no pacote da versão 7. O `nani`
-  usa o `tsgo` justamente para não depender disso;
-- **binário fora do PATH** — confira `which gopls tsgo micro`.
+- **the file is outside a project** — with no `go.mod` or `tsconfig.json` around,
+  the server does not build a workspace;
+- **`typescript` 7 installed as a global npm package** — `typescript-language-server`
+  looks for `lib/tsserver.js`, which no longer exists in the version 7 package.
+  `nani` uses `tsgo` precisely to avoid depending on that;
+- **a binary outside the PATH** — check `which gopls tsgo micro`.
 
-## Variáveis
+## Environment
 
-| variável | efeito |
+| variable | effect |
 | --- | --- |
-| `NANI_EDITOR` | editor a abrir, no lugar do micro |
-| `NANI_LSP_LOG` | caminho do log do proxy LSP |
+| `NANI_EDITOR` | editor to open instead of micro |
+| `NANI_LSP_LOG` | path to the LSP proxy log |
 
-## Estrutura
+## Layout
 
 ```
-main.go      subcomandos da CLI
-browser.go   navegação, listagem respeitando o .gitignore e abertura do editor
-lsp.go       ponte LSP: pull -> push e respostas aos requests do servidor
-setup.go     instalação do editor, plugins, language servers e configuração
-docs/        as capturas acima, geradas a partir de telas reais do terminal
+main.go      CLI subcommands
+browser.go   navigation, gitignore-aware listing and opening the editor
+lsp.go       LSP bridge: pull -> push and replies to the server's requests
+setup.go     installing the editor, plugins, language servers and config
+docs/        the captures above, generated from real terminal screens
 ```
